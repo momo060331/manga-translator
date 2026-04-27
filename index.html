@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="漫画翻訳" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>漫画翻訳 — MangaTL</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1e1e1e;
+      --border: #2a2a2a;
+      --accent: #e8ff47;
+      --accent-dim: rgba(232,255,71,0.12);
+      --text: #f0f0f0;
+      --text-muted: #888;
+      --text-dim: #555;
+      --bubble-bg: rgba(255,255,255,0.95);
+      --bubble-text: #111;
+      --radius: 12px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; }
+
+    #app { display: flex; flex-direction: column; height: 100%; padding-top: var(--safe-top); }
+
+    /* Header */
+    .header {
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .logo { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+    .logo span { color: var(--text-muted); font-weight: 400; }
+    .header-actions { display: flex; gap: 8px; }
+    .icon-btn {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 16px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .icon-btn:active { background: var(--surface2); color: var(--text); }
+
+    /* URL bar */
+    .url-bar {
+      flex-shrink: 0;
+      padding: 10px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .url-row { display: flex; gap: 8px; align-items: center; }
+    .url-input {
+      flex: 1; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+      font-size: 13px; font-family: 'Space Mono', monospace;
+      color: var(--text); outline: none; transition: border-color 0.2s;
+    }
+    .url-input:focus { border-color: var(--accent); }
+    .url-input::placeholder { color: var(--text-dim); }
+    .go-btn {
+      height: 40px; padding: 0 16px;
+      background: var(--accent); color: #000; font-weight: 700;
+      border: none; border-radius: 8px; font-size: 13px;
+      cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .go-btn:active { opacity: 0.8; }
+    .go-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* Nav bar */
+    .nav-bar {
+      flex-shrink: 0;
+      display: flex; align-items: center; gap: 6px;
+      padding: 8px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-btn {
+      height: 32px; padding: 0 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-muted); border-radius: 6px; font-size: 12px;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .nav-btn:active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+    .page-info { flex: 1; text-align: center; font-size: 12px; color: var(--text-dim); font-family: 'Space Mono', monospace; }
+
+    /* Status bar */
+    .status-bar {
+      flex-shrink: 0; padding: 6px 16px;
+      font-size: 11px; color: var(--text-muted);
+      background: var(--bg); border-bottom: 1px solid var(--border);
+      min-height: 26px; display: flex; align-items: center; gap: 6px;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+    .status-dot.active { background: var(--accent); animation: pulse 1s infinite; }
+    .status-dot.done { background: #4ade80; }
+    .status-dot.error { background: #f87171; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* Image viewer */
+    .viewer {
+      flex: 1; overflow-y: auto; overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      position: relative; background: var(--bg);
+    }
+    .image-wrapper { position: relative; display: inline-block; width: 100%; }
+    .manga-img { width: 100%; display: block; }
+
+    /* Bubbles */
+    .bubble {
+      position: absolute;
+      background: var(--bubble-bg);
+      color: var(--bubble-text);
+      border-radius: 10px;
+      padding: 3px 6px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.4;
+      text-align: center;
+      word-break: break-all;
+      pointer-events: auto;
+      border: 1.5px solid rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      cursor: pointer;
+      transition: transform 0.1s;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .bubble:active { transform: scale(0.97); }
+
+    /* Empty state */
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      height: 100%; gap: 16px; padding: 32px;
+      text-align: center;
+    }
+    .empty-icon { font-size: 48px; opacity: 0.3; }
+    .empty-title { font-size: 16px; font-weight: 500; color: var(--text-muted); }
+    .empty-desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
+
+    /* Upload area */
+    .upload-area {
+      margin: 16px; border: 1.5px dashed var(--border);
+      border-radius: var(--radius); padding: 24px;
+      text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .upload-area:active { border-color: var(--accent); background: var(--accent-dim); }
+    .upload-label { font-size: 13px; color: var(--text-muted); cursor: pointer; }
+    .upload-label strong { color: var(--accent); }
+    #fileInput { display: none; }
+
+    /* Translation panel */
+    .trans-panel {
+      margin: 0 16px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .trans-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px; font-weight: 700;
+      color: var(--accent); letter-spacing: 1px;
+      text-transform: uppercase;
+      font-family: 'Space Mono', monospace;
+    }
+    .trans-item { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .trans-item:last-child { border-bottom: none; }
+    .trans-en { font-size: 11px; color: var(--text-dim); margin-bottom: 3px; font-family: 'Space Mono', monospace; }
+    .trans-ja { font-size: 14px; color: var(--text); }
+
+    /* Bottom safe area */
+    .bottom-pad { height: var(--safe-bottom); background: var(--bg); flex-shrink: 0; }
+
+    /* Settings modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+      display: flex; align-items: flex-end; z-index: 100;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal {
+      width: 100%; background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      padding: 20px 20px calc(20px + var(--safe-bottom));
+      transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--accent); }
+    .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .setting-label { font-size: 14px; color: var(--text); }
+    .setting-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+    .api-input {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px; font-size: 13px;
+      color: var(--text); outline: none; margin-top: 8px;
+      font-family: 'Space Mono', monospace;
+    }
+    .api-input:focus { border-color: var(--accent); }
+    .save-btn {
+      width: 100%; margin-top: 16px; padding: 14px;
+      background: var(--accent); color: #000; font-weight: 700;
+      border: none; border-radius: 10px; font-size: 15px;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+    }
+    .close-btn {
+      width: 100%; margin-top: 8px; padding: 12px;
+      background: transparent; color: var(--text-muted); font-weight: 500;
+      border: 1px solid var(--border); border-radius: 10px; font-size: 14px;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: calc(20px + var(--safe-bottom)); left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: 13px; padding: 10px 18px;
+      border-radius: 20px; opacity: 0; transition: all 0.2s;
+      pointer-events: none; white-space: nowrap; z-index: 200;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="logo">Manga<span>TL</span></div>
+    <div class="header-actions">
+      <div class="icon-btn" onclick="openSettings()" title="設定">⚙</div>
+    </div>
+  </div>
+
+  <div class="url-bar">
+    <div class="url-row">
+      <input class="url-input" id="urlInput" type="url" placeholder="https://... 漫画画像のURLを入力" />
+      <button class="go-btn" id="goBtn" onclick="loadUrl()">翻訳</button>
+    </div>
+  </div>
+
+  <div class="nav-bar" id="navBar" style="display:none;">
+    <button class="nav-btn" id="prevBtn" onclick="goPage(-1)" disabled>← 前へ</button>
+    <span class="page-info" id="pageInfo">— / —</span>
+    <button class="nav-btn" id="nextBtn" onclick="goPage(1)" disabled>次へ →</button>
+    <button class="nav-btn" onclick="retranslate()" id="retransBtn">再翻訳</button>
+  </div>
+
+  <div class="status-bar" id="statusBar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">URLを入力して翻訳を開始してください</span>
+  </div>
+
+  <div class="viewer" id="viewer">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">📖</div>
+      <div class="empty-title">漫画翻訳アプリ</div>
+      <div class="empty-desc">上のURLバーに漫画画像のURLを入力するか、<br>画像をアップロードして翻訳を開始</div>
+    </div>
+
+    <div style="display:none;" id="imageSection">
+      <div class="image-wrapper" id="imageWrapper">
+        <img id="mangaImg" class="manga-img" alt="漫画" />
+      </div>
+      <div class="trans-panel" id="transPanel" style="display:none;">
+        <div class="trans-header">翻訳一覧</div>
+        <div id="transList"></div>
+      </div>
+    </div>
+
+    <div id="uploadSection">
+      <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+        <label class="upload-label">
+          <strong>タップして画像をアップロード</strong><br>
+          <span style="font-size:11px;">jpg・png・webp 対応</span>
+        </label>
+        <input type="file" id="fileInput" accept="image/*" onchange="loadFile(event)" />
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-pad"></div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeSettingsOutside(event)">
+  <div class="modal">
+    <div class="modal-title">設定</div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Anthropic API キー</div>
+        <div class="setting-desc">翻訳にはAPIキーが必要です</div>
+        <input class="api-input" id="apiKeyInput" type="password" placeholder="sk-ant-..." />
+      </div>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">吹き出しの文字サイズ</div>
+        <div class="setting-desc">画像上に重ねる日本語の大きさ</div>
+      </div>
+      <select id="fontSizeSelect" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:13px;">
+        <option value="10">小</option>
+        <option value="12" selected>中</option>
+        <option value="14">大</option>
+      </select>
+    </div>
+    <button class="save-btn" onclick="saveSettings()">保存</button>
+    <button class="close-btn" onclick="closeSettings()">閉じる</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API_URL = 'https://api.anthropic.com/v1/messages';
+let apiKey = localStorage.getItem('apiKey') || '';
+let fontSize = localStorage.getItem('fontSize') || '12';
+let history = [];
+let currentIndex = -1;
+let isLoading = false;
+
+function setStatus(msg, type='idle') {
+  document.getElementById('statusText').textContent = msg;
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot' + (type==='loading' ? ' active' : type==='done' ? ' done' : type==='error' ? ' error' : '');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function openSettings() {
+  document.getElementById('apiKeyInput').value = apiKey;
+  document.getElementById('fontSizeSelect').value = fontSize;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeSettings() { document.getElementById('modalOverlay').classList.remove('open'); }
+function closeSettingsOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeSettings(); }
+function saveSettings() {
+  apiKey = document.getElementById('apiKeyInput').value.trim();
+  fontSize = document.getElementById('fontSizeSelect').value;
+  localStorage.setItem('apiKey', apiKey);
+  localStorage.setItem('fontSize', fontSize);
+  closeSettings();
+  showToast('設定を保存しました');
+}
+
+function loadUrl() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) { setStatus('URLを入力してください', 'error'); return; }
+  if (!apiKey) { openSettings(); showToast('先にAPIキーを設定してください'); return; }
+  fetchImageAsBase64(url);
+}
+
+function fetchImageAsBase64(url) {
+  setStatus('画像を読み込み中...', 'loading');
+  document.getElementById('goBtn').disabled = true;
+  const img = new Image();
+  img.crossOrigin = 'Anonymous';
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    canvas.getContext('2d').drawImage(img, 0, 0);
+    try {
+      const b64 = canvas.toDataURL('image/jpeg').split(',')[1];
+      addToHistory(url);
+      showImage(img.src, b64, 'image/jpeg');
+    } catch(e) {
+      setStatus('CORS制限で読み込めません。画像を保存してアップロードしてください', 'error');
+      document.getElementById('goBtn').disabled = false;
+    }
+  };
+  img.onerror = () => {
+    setStatus('画像の読み込みに失敗しました', 'error');
+    document.getElementById('goBtn').disabled = false;
+  };
+  img.src = url;
+}
+
+function loadFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!apiKey) { openSettings(); showToast('先にAPIキーを設定してください'); return; }
+  setStatus('画像を読み込み中...', 'loading');
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    const b64 = dataUrl.split(',')[1];
+    showImage(dataUrl, b64, file.type || 'image/jpeg');
+  };
+  reader.readAsDataURL(file);
+}
+
+function showImage(src, b64, mime) {
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('uploadSection').style.display = 'none';
+  document.getElementById('imageSection').style.display = 'block';
+  document.getElementById('navBar').style.display = 'flex';
+  document.getElementById('transPanel').style.display = 'none';
+  document.getElementById('transList').innerHTML = '';
+  document.getElementById('imageWrapper').querySelectorAll('.bubble').forEach(b => b.remove());
+  const img = document.getElementById('mangaImg');
+  img.src = src;
+  img.onload = () => translate(b64, mime);
+  updateNavButtons();
+}
+
+function addToHistory(url) {
+  if (history[currentIndex] === url) return;
+  history = history.slice(0, currentIndex + 1);
+  history.push(url);
+  currentIndex = history.length - 1;
+  updateNavButtons();
+}
+
+function goPage(dir) {
+  const newIndex = currentIndex + dir;
+  if (newIndex < 0 || newIndex >= history.length) return;
+  currentIndex = newIndex;
+  const url = history[currentIndex];
+  document.getElementById('urlInput').value = url;
+  fetchImageAsBase64(url);
+  updateNavButtons();
+}
+
+function updateNavButtons() {
+  document.getElementById('prevBtn').disabled = currentIndex <= 0;
+  document.getElementById('nextBtn').disabled = currentIndex >= history.length - 1;
+  document.getElementById('pageInfo').textContent = history.length > 0
+    ? `${currentIndex + 1} / ${history.length}` : '— / —';
+}
+
+function retranslate() {
+  const img = document.getElementById('mangaImg');
+  if (!img.src || img.src === window.location.href) return;
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  canvas.getContext('2d').drawImage(img, 0, 0);
+  const b64 = canvas.toDataURL('image/jpeg').split(',')[1];
+  document.getElementById('imageWrapper').querySelectorAll('.bubble').forEach(b => b.remove());
+  document.getElementById('transList').innerHTML = '';
+  translate(b64, 'image/jpeg');
+}
+
+async function translate(b64, mime) {
+  if (isLoading) return;
+  isLoading = true;
+  setStatus('AIが吹き出しを検出・翻訳中...', 'loading');
+  document.getElementById('goBtn').disabled = true;
+  document.getElementById('retransBtn').disabled = true;
+
+  const prompt = `あなたは漫画翻訳の専門家です。この漫画画像を分析して、吹き出し内の英語テキストをすべて検出し、日本語に翻訳してください。
+
+以下のJSON形式のみで返答してください（説明や\`\`\`は不要）:
+{"bubbles":[{"id":1,"english":"原文英語","japanese":"日本語訳","position":{"top_percent":数値,"left_percent":数値,"width_percent":数値}}]}
+
+- top_percent: 吹き出し上端の位置（画像高さに対する%、0-100）
+- left_percent: 吹き出し左端の位置（画像幅に対する%、0-100）
+- width_percent: 吹き出し幅（画像幅に対する%、5-45）
+吹き出しが見つからない場合は {"bubbles":[]} を返してください。`;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } },
+          { type: 'text', text: prompt }
+        ]}]
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    const text = data.content.map(c => c.text || '').join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    renderBubbles(parsed.bubbles || []);
+  } catch(e) {
+    setStatus('翻訳エラー: ' + e.message, 'error');
+  }
+  isLoading = false;
+  document.getElementById('goBtn').disabled = false;
+  document.getElementById('retransBtn').disabled = false;
+}
+
+function renderBubbles(bubbles) {
+  const wrapper = document.getElementById('imageWrapper');
+  const transList = document.getElementById('transList');
+  wrapper.querySelectorAll('.bubble').forEach(b => b.remove());
+  transList.innerHTML = '';
+
+  if (bubbles.length === 0) {
+    setStatus('吹き出しが検出されませんでした', 'done');
+    return;
+  }
+
+  bubbles.forEach((b, i) => {
+    const div = document.createElement('div');
+    div.className = 'bubble';
+    div.style.top = b.position.top_percent + '%';
+    div.style.left = b.position.left_percent + '%';
+    div.style.width = b.position.width_percent + '%';
+    div.style.fontSize = fontSize + 'px';
+    div.textContent = b.japanese;
+    div.title = b.english;
+    div.onclick = () => {
+      navigator.clipboard.writeText(b.japanese).catch(()=>{});
+      showToast('コピーしました');
+    };
+    wrapper.appendChild(div);
+
+    const item = document.createElement('div');
+    item.className = 'trans-item';
+    item.innerHTML = `<div class="trans-en">${i+1}. ${esc(b.english)}</div><div class="trans-ja">${esc(b.japanese)}</div>`;
+    transList.appendChild(item);
+  });
+
+  document.getElementById('transPanel').style.display = 'block';
+  setStatus(`${bubbles.length}個の吹き出しを翻訳しました`, 'done');
+}
+
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Enter key
+document.getElementById('urlInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loadUrl();
+});
+
+// Init
+if (!apiKey) {
+  setTimeout(() => { openSettings(); }, 500);
+}
+
+// Service worker registration
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
