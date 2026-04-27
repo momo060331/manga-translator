@@ -1,11 +1,11 @@
 {
   "name": "MangaTL — 漫画翻訳",
   "short_name": "MangaTL",
-  "description": "英語漫画を日本語に自動翻訳するアプリ",
+  "description": "英語漫画を日本語に自動翻訳。Google Geminiで無料利用可能。",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "background_color": "#0f0f0f",
+  "theme_color": "#0f0f0f",
   "orientation": "portrait",
   "lang": "ja",
   "icons": [

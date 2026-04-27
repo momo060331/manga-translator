@@ -3,375 +3,460 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="theme-color" content="#0f0f0f" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="漫画翻訳" />
+  <meta name="apple-mobile-web-app-title" content="MangaTL" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-192.png" />
-  <title>漫画翻訳 — MangaTL</title>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <title>MangaTL — 漫画翻訳</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0a0a0a;
-      --surface: #141414;
-      --surface2: #1e1e1e;
-      --border: #2a2a2a;
-      --accent: #e8ff47;
-      --accent-dim: rgba(232,255,71,0.12);
-      --text: #f0f0f0;
+      --bg: #0f0f0f;
+      --surface: #1a1a1a;
+      --surface2: #242424;
+      --border: #2e2e2e;
+      --accent: #7fff7f;
+      --accent-dim: rgba(127,255,127,0.1);
+      --accent-dark: #3a8a3a;
+      --text: #efefef;
       --text-muted: #888;
-      --text-dim: #555;
-      --bubble-bg: rgba(255,255,255,0.95);
-      --bubble-text: #111;
-      --radius: 12px;
+      --text-dim: #4a4a4a;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
+
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; }
 
+    /* ===== LAYOUT ===== */
     #app { display: flex; flex-direction: column; height: 100%; padding-top: var(--safe-top); }
 
-    /* Header */
+    /* ===== HEADER ===== */
     .header {
       flex-shrink: 0;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 16px 10px;
-      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px;
       background: var(--bg);
+      border-bottom: 1px solid var(--border);
     }
-    .logo { font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
-    .logo span { color: var(--text-muted); font-weight: 400; }
-    .header-actions { display: flex; gap: 8px; }
+    .logo {
+      font-family: 'DM Mono', monospace;
+      font-size: 17px; font-weight: 500;
+      color: var(--accent);
+      letter-spacing: -0.3px;
+      flex-shrink: 0;
+    }
+    .logo em { color: var(--text-muted); font-style: normal; }
+    .header-spacer { flex: 1; }
     .icon-btn {
-      width: 36px; height: 36px; border-radius: 8px;
+      width: 34px; height: 34px;
       background: var(--surface); border: 1px solid var(--border);
-      color: var(--text-muted); font-size: 16px;
+      border-radius: var(--radius-sm); color: var(--text-muted);
       display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: all 0.15s;
+      cursor: pointer; font-size: 15px; flex-shrink: 0;
+      transition: border-color 0.15s, color 0.15s;
     }
-    .icon-btn:active { background: var(--surface2); color: var(--text); }
+    .icon-btn:active { border-color: var(--accent); color: var(--accent); }
 
-    /* URL bar */
+    /* ===== URL BAR ===== */
     .url-bar {
       flex-shrink: 0;
       padding: 10px 16px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
     }
-    .url-row { display: flex; gap: 8px; align-items: center; }
+    .url-row { display: flex; gap: 8px; }
     .url-input {
-      flex: 1; background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: 10px 12px;
-      font-size: 13px; font-family: 'Space Mono', monospace;
-      color: var(--text); outline: none; transition: border-color 0.2s;
+      flex: 1; min-width: 0;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 9px 12px;
+      font-size: 12px; font-family: 'DM Mono', monospace;
+      color: var(--text); outline: none;
+      transition: border-color 0.2s;
     }
     .url-input:focus { border-color: var(--accent); }
     .url-input::placeholder { color: var(--text-dim); }
     .go-btn {
-      height: 40px; padding: 0 16px;
-      background: var(--accent); color: #000; font-weight: 700;
-      border: none; border-radius: 8px; font-size: 13px;
-      cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
+      padding: 0 14px; height: 38px;
+      background: var(--accent); color: #000;
+      font-weight: 700; border: none;
+      border-radius: var(--radius-sm); font-size: 13px;
+      cursor: pointer; white-space: nowrap; flex-shrink: 0;
       font-family: 'Noto Sans JP', sans-serif;
+      transition: opacity 0.15s;
     }
-    .go-btn:active { opacity: 0.8; }
-    .go-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .go-btn:active { opacity: 0.75; }
+    .go-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-    /* Nav bar */
+    /* ===== NAV BAR ===== */
     .nav-bar {
-      flex-shrink: 0;
-      display: flex; align-items: center; gap: 6px;
+      flex-shrink: 0; display: none;
+      align-items: center; gap: 6px;
       padding: 8px 16px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
     }
+    .nav-bar.visible { display: flex; }
     .nav-btn {
-      height: 32px; padding: 0 12px;
+      height: 30px; padding: 0 12px;
       background: var(--surface2); border: 1px solid var(--border);
-      color: var(--text-muted); border-radius: 6px; font-size: 12px;
-      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+      border-radius: 20px; color: var(--text-muted);
+      font-size: 12px; cursor: pointer; white-space: nowrap;
       font-family: 'Noto Sans JP', sans-serif;
+      transition: all 0.15s;
     }
-    .nav-btn:active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+    .nav-btn:active { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
     .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .page-info { flex: 1; text-align: center; font-size: 12px; color: var(--text-dim); font-family: 'Space Mono', monospace; }
-
-    /* Status bar */
-    .status-bar {
-      flex-shrink: 0; padding: 6px 16px;
-      font-size: 11px; color: var(--text-muted);
-      background: var(--bg); border-bottom: 1px solid var(--border);
-      min-height: 26px; display: flex; align-items: center; gap: 6px;
+    .page-label {
+      flex: 1; text-align: center;
+      font-size: 11px; color: var(--text-dim);
+      font-family: 'DM Mono', monospace;
     }
-    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
-    .status-dot.active { background: var(--accent); animation: pulse 1s infinite; }
-    .status-dot.done { background: #4ade80; }
-    .status-dot.error { background: #f87171; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-    /* Image viewer */
+    /* ===== STATUS ===== */
+    .status-bar {
+      flex-shrink: 0;
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 16px; min-height: 28px;
+      background: var(--bg); border-bottom: 1px solid var(--border);
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); flex-shrink: 0; }
+    .dot.loading { background: var(--accent); animation: blink 0.8s infinite; }
+    .dot.done { background: #7fff7f; }
+    .dot.error { background: #ff6b6b; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    #statusText { font-size: 11px; color: var(--text-muted); }
+
+    /* ===== VIEWER ===== */
     .viewer {
       flex: 1; overflow-y: auto; overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      position: relative; background: var(--bg);
+      background: var(--bg);
     }
-    .image-wrapper { position: relative; display: inline-block; width: 100%; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 100%; gap: 20px; padding: 40px 24px;
+      text-align: center;
+    }
+    .empty-icon {
+      width: 72px; height: 72px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px;
+    }
+    .empty-title { font-size: 17px; font-weight: 500; color: var(--text); }
+    .empty-desc { font-size: 13px; color: var(--text-muted); line-height: 1.7; max-width: 280px; }
+
+    /* Upload */
+    .upload-wrap { width: 100%; max-width: 320px; }
+    .upload-area {
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px; text-align: center;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .upload-area:active { border-color: var(--accent); background: var(--accent-dim); }
+    .upload-label { font-size: 13px; color: var(--text-muted); cursor: pointer; }
+    .upload-label strong { color: var(--accent); display: block; margin-bottom: 4px; }
+    #fileInput { display: none; }
+
+    /* ===== IMAGE SECTION ===== */
+    #imageSection { display: none; }
+    .img-wrapper { position: relative; display: block; width: 100%; }
     .manga-img { width: 100%; display: block; }
 
-    /* Bubbles */
+    /* Bubble */
     .bubble {
       position: absolute;
-      background: var(--bubble-bg);
-      color: var(--bubble-text);
+      background: rgba(255,255,255,0.93);
+      color: #111;
       border-radius: 10px;
       padding: 3px 6px;
       font-size: 11px;
       font-weight: 500;
-      line-height: 1.4;
+      line-height: 1.45;
       text-align: center;
       word-break: break-all;
-      pointer-events: auto;
-      border: 1.5px solid rgba(0,0,0,0.1);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 1px solid rgba(0,0,0,0.12);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.25);
       cursor: pointer;
-      transition: transform 0.1s;
+      transition: transform 0.1s, box-shadow 0.1s;
       font-family: 'Noto Sans JP', sans-serif;
     }
-    .bubble:active { transform: scale(0.97); }
+    .bubble:active { transform: scale(0.96); }
 
-    /* Empty state */
-    .empty-state {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      height: 100%; gap: 16px; padding: 32px;
-      text-align: center;
-    }
-    .empty-icon { font-size: 48px; opacity: 0.3; }
-    .empty-title { font-size: 16px; font-weight: 500; color: var(--text-muted); }
-    .empty-desc { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
-
-    /* Upload area */
-    .upload-area {
-      margin: 16px; border: 1.5px dashed var(--border);
-      border-radius: var(--radius); padding: 24px;
-      text-align: center; cursor: pointer;
-      transition: border-color 0.2s, background 0.2s;
-    }
-    .upload-area:active { border-color: var(--accent); background: var(--accent-dim); }
-    .upload-label { font-size: 13px; color: var(--text-muted); cursor: pointer; }
-    .upload-label strong { color: var(--accent); }
-    #fileInput { display: none; }
-
-    /* Translation panel */
+    /* Trans panel */
     .trans-panel {
-      margin: 0 16px 16px;
-      background: var(--surface);
+      margin: 12px 16px 20px;
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: var(--radius-md);
       overflow: hidden;
+      display: none;
     }
-    .trans-header {
-      padding: 10px 14px;
+    .trans-panel.visible { display: block; }
+    .trans-head {
+      padding: 8px 14px;
+      background: var(--surface);
       border-bottom: 1px solid var(--border);
-      font-size: 11px; font-weight: 700;
-      color: var(--accent); letter-spacing: 1px;
+      font-size: 10px; font-weight: 500;
+      color: var(--accent); letter-spacing: 1.5px;
       text-transform: uppercase;
-      font-family: 'Space Mono', monospace;
+      font-family: 'DM Mono', monospace;
     }
     .trans-item { padding: 10px 14px; border-bottom: 1px solid var(--border); }
     .trans-item:last-child { border-bottom: none; }
-    .trans-en { font-size: 11px; color: var(--text-dim); margin-bottom: 3px; font-family: 'Space Mono', monospace; }
-    .trans-ja { font-size: 14px; color: var(--text); }
+    .trans-en { font-size: 11px; color: var(--text-dim); font-family: 'DM Mono', monospace; margin-bottom: 3px; }
+    .trans-ja { font-size: 14px; color: var(--text); line-height: 1.5; }
 
-    /* Bottom safe area */
-    .bottom-pad { height: var(--safe-bottom); background: var(--bg); flex-shrink: 0; }
-
-    /* Settings modal */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    /* ===== MODAL ===== */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
       display: flex; align-items: flex-end; z-index: 100;
       opacity: 0; pointer-events: none; transition: opacity 0.2s;
     }
-    .modal-overlay.open { opacity: 1; pointer-events: auto; }
-    .modal {
+    .overlay.open { opacity: 1; pointer-events: auto; }
+    .sheet {
       width: 100%; background: var(--surface);
       border-radius: 20px 20px 0 0;
       padding: 20px 20px calc(20px + var(--safe-bottom));
-      transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      transform: translateY(100%);
+      transition: transform 0.28s cubic-bezier(0.32,1.2,0.64,1);
     }
-    .modal-overlay.open .modal { transform: translateY(0); }
-    .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--accent); }
-    .setting-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
-    .setting-label { font-size: 14px; color: var(--text); }
-    .setting-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-    .api-input {
-      width: 100%; background: var(--bg); border: 1px solid var(--border);
-      border-radius: 8px; padding: 10px 12px; font-size: 13px;
-      color: var(--text); outline: none; margin-top: 8px;
-      font-family: 'Space Mono', monospace;
+    .overlay.open .sheet { transform: translateY(0); }
+    .sheet-title { font-size: 15px; font-weight: 700; color: var(--accent); margin-bottom: 18px; font-family: 'DM Mono', monospace; }
+
+    .field-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .field-desc { font-size: 11px; color: var(--text-dim); margin-bottom: 8px; }
+    .field-input {
+      width: 100%; background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 10px 12px;
+      font-size: 13px; color: var(--text); outline: none;
+      font-family: 'DM Mono', monospace; margin-bottom: 14px;
     }
-    .api-input:focus { border-color: var(--accent); }
-    .save-btn {
-      width: 100%; margin-top: 16px; padding: 14px;
-      background: var(--accent); color: #000; font-weight: 700;
-      border: none; border-radius: 10px; font-size: 15px;
-      cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
-    }
-    .close-btn {
-      width: 100%; margin-top: 8px; padding: 12px;
-      background: transparent; color: var(--text-muted); font-weight: 500;
-      border: 1px solid var(--border); border-radius: 10px; font-size: 14px;
-      cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+    .field-input:focus { border-color: var(--accent); }
+
+    .field-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .field-row select {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 7px 10px;
+      color: var(--text); font-size: 13px;
     }
 
-    /* Toast */
+    .btn-save {
+      width: 100%; padding: 13px;
+      background: var(--accent); color: #000; font-weight: 700;
+      border: none; border-radius: var(--radius-md); font-size: 15px;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif; margin-top: 4px;
+    }
+    .btn-close {
+      width: 100%; padding: 11px; margin-top: 8px;
+      background: transparent; color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: var(--radius-md);
+      font-size: 14px; cursor: pointer;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+
+    /* How-to link */
+    .howto-link {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; color: var(--accent);
+      text-decoration: none; margin-top: 2px;
+    }
+
+    /* ===== TOAST ===== */
     .toast {
-      position: fixed; bottom: calc(20px + var(--safe-bottom)); left: 50%; transform: translateX(-50%) translateY(20px);
+      position: fixed; bottom: calc(24px + var(--safe-bottom));
+      left: 50%; transform: translateX(-50%) translateY(12px);
       background: var(--surface2); border: 1px solid var(--border);
-      color: var(--text); font-size: 13px; padding: 10px 18px;
-      border-radius: 20px; opacity: 0; transition: all 0.2s;
-      pointer-events: none; white-space: nowrap; z-index: 200;
+      color: var(--text); font-size: 12px;
+      padding: 9px 18px; border-radius: 20px;
+      opacity: 0; pointer-events: none; z-index: 200;
+      white-space: nowrap; transition: all 0.18s;
     }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    .bottom-pad { height: var(--safe-bottom); flex-shrink: 0; }
   </style>
 </head>
 <body>
 <div id="app">
+
+  <!-- HEADER -->
   <div class="header">
-    <div class="logo">Manga<span>TL</span></div>
-    <div class="header-actions">
-      <div class="icon-btn" onclick="openSettings()" title="設定">⚙</div>
-    </div>
+    <div class="logo">Manga<em>TL</em></div>
+    <div class="header-spacer"></div>
+    <div class="icon-btn" onclick="openSettings()" title="設定">⚙</div>
   </div>
 
+  <!-- URL BAR -->
   <div class="url-bar">
     <div class="url-row">
-      <input class="url-input" id="urlInput" type="url" placeholder="https://... 漫画画像のURLを入力" />
-      <button class="go-btn" id="goBtn" onclick="loadUrl()">翻訳</button>
+      <input class="url-input" id="urlInput" type="url" placeholder="https://... 漫画画像のURLを貼り付け" />
+      <button class="go-btn" id="goBtn" onclick="loadFromUrl()">翻訳</button>
     </div>
   </div>
 
-  <div class="nav-bar" id="navBar" style="display:none;">
+  <!-- NAV BAR -->
+  <div class="nav-bar" id="navBar">
     <button class="nav-btn" id="prevBtn" onclick="goPage(-1)" disabled>← 前へ</button>
-    <span class="page-info" id="pageInfo">— / —</span>
+    <span class="page-label" id="pageLabel"></span>
     <button class="nav-btn" id="nextBtn" onclick="goPage(1)" disabled>次へ →</button>
-    <button class="nav-btn" onclick="retranslate()" id="retransBtn">再翻訳</button>
+    <button class="nav-btn" id="retransBtn" onclick="retranslate()">再翻訳</button>
   </div>
 
-  <div class="status-bar" id="statusBar">
-    <div class="status-dot" id="statusDot"></div>
+  <!-- STATUS -->
+  <div class="status-bar">
+    <div class="dot" id="dot"></div>
     <span id="statusText">URLを入力して翻訳を開始してください</span>
   </div>
 
+  <!-- VIEWER -->
   <div class="viewer" id="viewer">
+
+    <!-- Empty state -->
     <div class="empty-state" id="emptyState">
       <div class="empty-icon">📖</div>
-      <div class="empty-title">漫画翻訳アプリ</div>
-      <div class="empty-desc">上のURLバーに漫画画像のURLを入力するか、<br>画像をアップロードして翻訳を開始</div>
+      <div class="empty-title">MangaTL</div>
+      <div class="empty-desc">英語漫画のURLを入力するか、<br>画像をアップロードして翻訳を開始。<br>Google Geminiで完全無料！</div>
+      <div class="upload-wrap">
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+          <label class="upload-label">
+            <strong>画像をアップロード</strong>
+            jpg / png / webp 対応
+          </label>
+          <input type="file" id="fileInput" accept="image/*" onchange="loadFromFile(event)" />
+        </div>
+      </div>
     </div>
 
-    <div style="display:none;" id="imageSection">
-      <div class="image-wrapper" id="imageWrapper">
-        <img id="mangaImg" class="manga-img" alt="漫画" />
+    <!-- Image section -->
+    <div id="imageSection">
+      <div class="img-wrapper" id="imgWrapper">
+        <img class="manga-img" id="mangaImg" alt="漫画" />
       </div>
-      <div class="trans-panel" id="transPanel" style="display:none;">
-        <div class="trans-header">翻訳一覧</div>
+      <div class="trans-panel" id="transPanel">
+        <div class="trans-head">翻訳一覧</div>
         <div id="transList"></div>
       </div>
     </div>
 
-    <div id="uploadSection">
-      <div class="upload-area" onclick="document.getElementById('fileInput').click()">
-        <label class="upload-label">
-          <strong>タップして画像をアップロード</strong><br>
-          <span style="font-size:11px;">jpg・png・webp 対応</span>
-        </label>
-        <input type="file" id="fileInput" accept="image/*" onchange="loadFile(event)" />
-      </div>
-    </div>
   </div>
 
   <div class="bottom-pad"></div>
 </div>
 
-<!-- Settings Modal -->
-<div class="modal-overlay" id="modalOverlay" onclick="closeSettingsOutside(event)">
-  <div class="modal">
-    <div class="modal-title">設定</div>
-    <div class="setting-row">
-      <div>
-        <div class="setting-label">Anthropic API キー</div>
-        <div class="setting-desc">翻訳にはAPIキーが必要です</div>
-        <input class="api-input" id="apiKeyInput" type="password" placeholder="sk-ant-..." />
-      </div>
+<!-- SETTINGS MODAL -->
+<div class="overlay" id="overlay" onclick="outsideClose(event)">
+  <div class="sheet">
+    <div class="sheet-title">// 設定</div>
+
+    <div class="field-label">Gemini API キー <span style="color:var(--accent);font-size:10px;">★ 無料</span></div>
+    <div class="field-desc">Google AI Studio で無料取得できます →
+      <a class="howto-link" href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com ↗</a>
     </div>
-    <div class="setting-row">
+    <input class="field-input" id="apiKeyInput" type="password" placeholder="AIza..." />
+
+    <div class="field-row">
       <div>
-        <div class="setting-label">吹き出しの文字サイズ</div>
-        <div class="setting-desc">画像上に重ねる日本語の大きさ</div>
+        <div class="field-label" style="margin-bottom:0;">吹き出し文字サイズ</div>
       </div>
-      <select id="fontSizeSelect" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:13px;">
-        <option value="10">小</option>
-        <option value="12" selected>中</option>
-        <option value="14">大</option>
+      <select id="fontSizeSelect">
+        <option value="10">小（10px）</option>
+        <option value="12" selected>中（12px）</option>
+        <option value="14">大（14px）</option>
       </select>
     </div>
-    <button class="save-btn" onclick="saveSettings()">保存</button>
-    <button class="close-btn" onclick="closeSettings()">閉じる</button>
+
+    <div class="field-row">
+      <div>
+        <div class="field-label" style="margin-bottom:0;">吹き出し背景</div>
+      </div>
+      <select id="bubbleBgSelect">
+        <option value="rgba(255,255,255,0.93)">白（デフォルト）</option>
+        <option value="rgba(255,255,180,0.93)">薄黄色</option>
+        <option value="rgba(180,230,255,0.93)">薄青色</option>
+      </select>
+    </div>
+
+    <button class="btn-save" onclick="saveSettings()">保存</button>
+    <button class="btn-close" onclick="closeSettings()">閉じる</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const API_URL = 'https://api.anthropic.com/v1/messages';
-let apiKey = localStorage.getItem('apiKey') || '';
+// ===== STATE =====
+let apiKey = localStorage.getItem('gemini_key') || '';
 let fontSize = localStorage.getItem('fontSize') || '12';
+let bubbleBg = localStorage.getItem('bubbleBg') || 'rgba(255,255,255,0.93)';
 let history = [];
-let currentIndex = -1;
+let currentIdx = -1;
 let isLoading = false;
+let currentB64 = null;
+let currentMime = 'image/jpeg';
 
-function setStatus(msg, type='idle') {
+const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+
+// ===== UI HELPERS =====
+function setStatus(msg, type = 'idle') {
   document.getElementById('statusText').textContent = msg;
-  const dot = document.getElementById('statusDot');
-  dot.className = 'status-dot' + (type==='loading' ? ' active' : type==='done' ? ' done' : type==='error' ? ' error' : '');
+  const d = document.getElementById('dot');
+  d.className = 'dot' + (type === 'loading' ? ' loading' : type === 'done' ? ' done' : type === 'error' ? ' error' : '');
 }
 
-function showToast(msg) {
+function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2000);
 }
 
+function setLoading(v) {
+  isLoading = v;
+  document.getElementById('goBtn').disabled = v;
+  document.getElementById('retransBtn').disabled = v;
+}
+
+// ===== SETTINGS =====
 function openSettings() {
   document.getElementById('apiKeyInput').value = apiKey;
   document.getElementById('fontSizeSelect').value = fontSize;
-  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('bubbleBgSelect').value = bubbleBg;
+  document.getElementById('overlay').classList.add('open');
 }
-function closeSettings() { document.getElementById('modalOverlay').classList.remove('open'); }
-function closeSettingsOutside(e) { if (e.target === document.getElementById('modalOverlay')) closeSettings(); }
+function closeSettings() { document.getElementById('overlay').classList.remove('open'); }
+function outsideClose(e) { if (e.target === document.getElementById('overlay')) closeSettings(); }
 function saveSettings() {
   apiKey = document.getElementById('apiKeyInput').value.trim();
   fontSize = document.getElementById('fontSizeSelect').value;
-  localStorage.setItem('apiKey', apiKey);
+  bubbleBg = document.getElementById('bubbleBgSelect').value;
+  localStorage.setItem('gemini_key', apiKey);
   localStorage.setItem('fontSize', fontSize);
+  localStorage.setItem('bubbleBg', bubbleBg);
   closeSettings();
-  showToast('設定を保存しました');
+  toast('設定を保存しました');
 }
 
-function loadUrl() {
+// ===== LOAD FROM URL =====
+function loadFromUrl() {
   const url = document.getElementById('urlInput').value.trim();
   if (!url) { setStatus('URLを入力してください', 'error'); return; }
-  if (!apiKey) { openSettings(); showToast('先にAPIキーを設定してください'); return; }
-  fetchImageAsBase64(url);
-}
-
-function fetchImageAsBase64(url) {
+  if (!apiKey) { openSettings(); toast('先にAPIキーを設定してください'); return; }
   setStatus('画像を読み込み中...', 'loading');
-  document.getElementById('goBtn').disabled = true;
+  setLoading(true);
+
   const img = new Image();
   img.crossOrigin = 'Anonymous';
   img.onload = () => {
@@ -380,136 +465,166 @@ function fetchImageAsBase64(url) {
     canvas.height = img.naturalHeight;
     canvas.getContext('2d').drawImage(img, 0, 0);
     try {
-      const b64 = canvas.toDataURL('image/jpeg').split(',')[1];
-      addToHistory(url);
-      showImage(img.src, b64, 'image/jpeg');
+      currentB64 = canvas.toDataURL('image/jpeg').split(',')[1];
+      currentMime = 'image/jpeg';
+      addHistory(url);
+      displayAndTranslate(img.src);
     } catch(e) {
-      setStatus('CORS制限で読み込めません。画像を保存してアップロードしてください', 'error');
-      document.getElementById('goBtn').disabled = false;
+      setStatus('CORS制限で読込不可。画像を保存してアップロードしてください', 'error');
+      setLoading(false);
     }
   };
-  img.onerror = () => {
-    setStatus('画像の読み込みに失敗しました', 'error');
-    document.getElementById('goBtn').disabled = false;
-  };
+  img.onerror = () => { setStatus('画像の読み込みに失敗しました', 'error'); setLoading(false); };
   img.src = url;
 }
 
-function loadFile(event) {
+// ===== LOAD FROM FILE =====
+function loadFromFile(event) {
   const file = event.target.files[0];
   if (!file) return;
-  if (!apiKey) { openSettings(); showToast('先にAPIキーを設定してください'); return; }
+  if (!apiKey) { openSettings(); toast('先にAPIキーを設定してください'); return; }
   setStatus('画像を読み込み中...', 'loading');
+  setLoading(true);
   const reader = new FileReader();
-  reader.onload = (e) => {
-    const dataUrl = e.target.result;
-    const b64 = dataUrl.split(',')[1];
-    showImage(dataUrl, b64, file.type || 'image/jpeg');
+  reader.onload = e => {
+    currentMime = file.type || 'image/jpeg';
+    currentB64 = e.target.result.split(',')[1];
+    displayAndTranslate(e.target.result);
   };
   reader.readAsDataURL(file);
 }
 
-function showImage(src, b64, mime) {
+// ===== DISPLAY IMAGE =====
+function displayAndTranslate(src) {
   document.getElementById('emptyState').style.display = 'none';
-  document.getElementById('uploadSection').style.display = 'none';
   document.getElementById('imageSection').style.display = 'block';
-  document.getElementById('navBar').style.display = 'flex';
-  document.getElementById('transPanel').style.display = 'none';
+  document.getElementById('navBar').classList.add('visible');
+  clearBubbles();
+  document.getElementById('transPanel').classList.remove('visible');
   document.getElementById('transList').innerHTML = '';
-  document.getElementById('imageWrapper').querySelectorAll('.bubble').forEach(b => b.remove());
+
   const img = document.getElementById('mangaImg');
   img.src = src;
-  img.onload = () => translate(b64, mime);
-  updateNavButtons();
+  img.onload = () => translateImage();
 }
 
-function addToHistory(url) {
-  if (history[currentIndex] === url) return;
-  history = history.slice(0, currentIndex + 1);
+// ===== HISTORY =====
+function addHistory(url) {
+  if (history[currentIdx] === url) return;
+  history = history.slice(0, currentIdx + 1);
   history.push(url);
-  currentIndex = history.length - 1;
-  updateNavButtons();
+  currentIdx = history.length - 1;
+  updateNav();
 }
 
 function goPage(dir) {
-  const newIndex = currentIndex + dir;
-  if (newIndex < 0 || newIndex >= history.length) return;
-  currentIndex = newIndex;
-  const url = history[currentIndex];
+  const next = currentIdx + dir;
+  if (next < 0 || next >= history.length) return;
+  currentIdx = next;
+  const url = history[currentIdx];
   document.getElementById('urlInput').value = url;
-  fetchImageAsBase64(url);
-  updateNavButtons();
+  setLoading(true);
+  setStatus('画像を読み込み中...', 'loading');
+  const img2 = new Image();
+  img2.crossOrigin = 'Anonymous';
+  img2.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = img2.naturalWidth; c.height = img2.naturalHeight;
+    c.getContext('2d').drawImage(img2, 0, 0);
+    currentB64 = c.toDataURL('image/jpeg').split(',')[1];
+    currentMime = 'image/jpeg';
+    displayAndTranslate(img2.src);
+  };
+  img2.onerror = () => { setStatus('読込失敗', 'error'); setLoading(false); };
+  img2.src = url;
+  updateNav();
 }
 
-function updateNavButtons() {
-  document.getElementById('prevBtn').disabled = currentIndex <= 0;
-  document.getElementById('nextBtn').disabled = currentIndex >= history.length - 1;
-  document.getElementById('pageInfo').textContent = history.length > 0
-    ? `${currentIndex + 1} / ${history.length}` : '— / —';
+function updateNav() {
+  document.getElementById('prevBtn').disabled = currentIdx <= 0;
+  document.getElementById('nextBtn').disabled = currentIdx >= history.length - 1;
+  document.getElementById('pageLabel').textContent =
+    history.length > 0 ? `${currentIdx + 1} / ${history.length}` : '';
 }
 
 function retranslate() {
-  const img = document.getElementById('mangaImg');
-  if (!img.src || img.src === window.location.href) return;
-  const canvas = document.createElement('canvas');
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
-  canvas.getContext('2d').drawImage(img, 0, 0);
-  const b64 = canvas.toDataURL('image/jpeg').split(',')[1];
-  document.getElementById('imageWrapper').querySelectorAll('.bubble').forEach(b => b.remove());
+  if (!currentB64) return;
+  clearBubbles();
+  document.getElementById('transPanel').classList.remove('visible');
   document.getElementById('transList').innerHTML = '';
-  translate(b64, 'image/jpeg');
+  translateImage();
 }
 
-async function translate(b64, mime) {
-  if (isLoading) return;
-  isLoading = true;
-  setStatus('AIが吹き出しを検出・翻訳中...', 'loading');
-  document.getElementById('goBtn').disabled = true;
-  document.getElementById('retransBtn').disabled = true;
+function clearBubbles() {
+  document.getElementById('imgWrapper').querySelectorAll('.bubble').forEach(b => b.remove());
+}
 
-  const prompt = `あなたは漫画翻訳の専門家です。この漫画画像を分析して、吹き出し内の英語テキストをすべて検出し、日本語に翻訳してください。
+// ===== TRANSLATE WITH GEMINI =====
+async function translateImage() {
+  if (isLoading && !currentB64) return;
+  setLoading(true);
+  setStatus('Gemini AIが吹き出しを検出・翻訳中...', 'loading');
 
-以下のJSON形式のみで返答してください（説明や\`\`\`は不要）:
-{"bubbles":[{"id":1,"english":"原文英語","japanese":"日本語訳","position":{"top_percent":数値,"left_percent":数値,"width_percent":数値}}]}
+  const prompt = `あなたは漫画翻訳の専門家です。この漫画画像を詳しく分析して、吹き出し内のすべての英語テキストを検出し、自然な日本語に翻訳してください。
 
-- top_percent: 吹き出し上端の位置（画像高さに対する%、0-100）
-- left_percent: 吹き出し左端の位置（画像幅に対する%、0-100）
-- width_percent: 吹き出し幅（画像幅に対する%、5-45）
-吹き出しが見つからない場合は {"bubbles":[]} を返してください。`;
+必ず以下のJSON形式のみで返答してください（説明文・マークダウン記号・\`\`\`は一切不要）:
+{"bubbles":[{"id":1,"english":"原文英語テキスト","japanese":"日本語翻訳","position":{"top_percent":数値,"left_percent":数値,"width_percent":数値}}]}
+
+位置の説明:
+- top_percent: 吹き出し上端（画像全体の高さに対する%、0〜95）
+- left_percent: 吹き出し左端（画像全体の幅に対する%、0〜90）
+- width_percent: 吹き出し幅（画像全体の幅に対する%、8〜45）
+
+吹き出しが1つも見つからない場合のみ: {"bubbles":[]}`;
 
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: mime, data: b64 } },
-          { type: 'text', text: prompt }
-        ]}]
+        contents: [{
+          parts: [
+            { inline_data: { mime_type: currentMime, data: currentB64 } },
+            { text: prompt }
+          ]
+        }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 2048 }
       })
     });
+
     const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    const text = data.content.map(c => c.text || '').join('');
-    const clean = text.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(clean);
+
+    if (data.error) throw new Error(data.error.message || 'Gemini APIエラー');
+
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const clean = raw.replace(/```json|```/g, '').trim();
+
+    let parsed;
+    try {
+      parsed = JSON.parse(clean);
+    } catch(e) {
+      // JSONが一部しか取れない場合も試みる
+      const match = clean.match(/\{[\s\S]*\}/);
+      if (match) parsed = JSON.parse(match[0]);
+      else throw new Error('レスポンスの解析に失敗しました');
+    }
+
     renderBubbles(parsed.bubbles || []);
-  } catch(e) {
-    setStatus('翻訳エラー: ' + e.message, 'error');
+
+  } catch(err) {
+    setStatus('エラー: ' + err.message, 'error');
+    console.error(err);
   }
-  isLoading = false;
-  document.getElementById('goBtn').disabled = false;
-  document.getElementById('retransBtn').disabled = false;
+
+  setLoading(false);
 }
 
+// ===== RENDER BUBBLES =====
 function renderBubbles(bubbles) {
-  const wrapper = document.getElementById('imageWrapper');
-  const transList = document.getElementById('transList');
-  wrapper.querySelectorAll('.bubble').forEach(b => b.remove());
-  transList.innerHTML = '';
+  clearBubbles();
+  const wrapper = document.getElementById('imgWrapper');
+  const list = document.getElementById('transList');
+  list.innerHTML = '';
 
   if (bubbles.length === 0) {
     setStatus('吹き出しが検出されませんでした', 'done');
@@ -517,47 +632,50 @@ function renderBubbles(bubbles) {
   }
 
   bubbles.forEach((b, i) => {
+    // Overlay bubble
     const div = document.createElement('div');
     div.className = 'bubble';
     div.style.top = b.position.top_percent + '%';
     div.style.left = b.position.left_percent + '%';
     div.style.width = b.position.width_percent + '%';
     div.style.fontSize = fontSize + 'px';
+    div.style.background = bubbleBg;
     div.textContent = b.japanese;
-    div.title = b.english;
+    div.title = '原文: ' + b.english;
     div.onclick = () => {
-      navigator.clipboard.writeText(b.japanese).catch(()=>{});
-      showToast('コピーしました');
+      navigator.clipboard.writeText(b.japanese).catch(() => {});
+      toast('コピーしました');
     };
     wrapper.appendChild(div);
 
+    // List item
     const item = document.createElement('div');
     item.className = 'trans-item';
-    item.innerHTML = `<div class="trans-en">${i+1}. ${esc(b.english)}</div><div class="trans-ja">${esc(b.japanese)}</div>`;
-    transList.appendChild(item);
+    item.innerHTML = `<div class="trans-en">${i + 1}. ${esc(b.english)}</div><div class="trans-ja">${esc(b.japanese)}</div>`;
+    list.appendChild(item);
   });
 
-  document.getElementById('transPanel').style.display = 'block';
-  setStatus(`${bubbles.length}個の吹き出しを翻訳しました`, 'done');
+  document.getElementById('transPanel').classList.add('visible');
+  setStatus(`${bubbles.length}個の吹き出しを翻訳しました ✓`, 'done');
 }
 
 function esc(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// Enter key
+// ===== EVENTS =====
 document.getElementById('urlInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') loadUrl();
+  if (e.key === 'Enter') loadFromUrl();
 });
 
-// Init
-if (!apiKey) {
-  setTimeout(() => { openSettings(); }, 500);
-}
-
-// Service worker registration
+// Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// Init: prompt for API key
+if (!apiKey) {
+  setTimeout(openSettings, 600);
 }
 </script>
 </body>
